@@ -21,10 +21,10 @@ impl Protection {
 
     fn as_flag(self) -> libc::c_int {
         match self {
-            Protection::Read => libc::MAP_SHARED,
-            Protection::ReadWrite => libc::MAP_SHARED,
-            Protection::ReadCopy => libc::MAP_PRIVATE,
-            Protection::ReadExecute => libc::MAP_SHARED,
+            Protection::Read => libc::MAP_SHARED | MAP_POPULATE,
+            Protection::ReadWrite => libc::MAP_SHARED | MAP_POPULATE,
+            Protection::ReadCopy => libc::MAP_PRIVATE | MAP_POPULATE,
+            Protection::ReadExecute => libc::MAP_SHARED | MAP_POPULATE,
         }
     }
 }
@@ -34,10 +34,20 @@ impl Protection {
           target_os = "android"))]
 const MAP_STACK: libc::c_int = libc::MAP_STACK;
 
+#[cfg(any(all(target_os = "linux", not(target_arch="mips")),
+          target_os = "freebsd",
+          target_os = "android"))]
+const MAP_POPULATE: libc::c_int = libc::MAP_POPULATE;
+
 #[cfg(not(any(all(target_os = "linux", not(target_arch="mips")),
               target_os = "freebsd",
               target_os = "android")))]
 const MAP_STACK: libc::c_int = 0;
+
+#[cfg(not(any(all(target_os = "linux", not(target_arch="mips")),
+              target_os = "freebsd",
+              target_os = "android")))]
+const MAP_POPULATE: libc::c_int = 0;
 
 impl MmapOptions {
     fn as_flag(self) -> libc::c_int {
