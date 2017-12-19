@@ -12,6 +12,16 @@ const MAP_STACK: libc::c_int = libc::MAP_STACK;
               target_os = "android")))]
 const MAP_STACK: libc::c_int = 0;
 
+#[cfg(any(all(target_os = "linux", not(target_arch="mips")),
+          target_os = "freebsd",
+          target_os = "android"))]
+const MAP_POPULATE: libc::c_int = libc::MAP_POPULATE;
+
+#[cfg(not(any(all(target_os = "linux", not(target_arch="mips")),
+              target_os = "freebsd",
+              target_os = "android")))]
+const MAP_POPULATE: libc::c_int = 0;
+
 pub struct MmapInner {
     ptr: *mut libc::c_void,
     len: usize,
@@ -64,7 +74,7 @@ impl MmapInner {
         MmapInner::new(
             len,
             libc::PROT_READ,
-            libc::MAP_SHARED,
+            libc::MAP_SHARED | MAP_POPULATE,
             file.as_raw_fd(),
             offset,
         )
@@ -74,7 +84,7 @@ impl MmapInner {
         MmapInner::new(
             len,
             libc::PROT_READ | libc::PROT_EXEC,
-            libc::MAP_SHARED,
+            libc::MAP_SHARED | MAP_POPULATE,
             file.as_raw_fd(),
             offset,
         )
@@ -84,7 +94,7 @@ impl MmapInner {
         MmapInner::new(
             len,
             libc::PROT_READ | libc::PROT_WRITE,
-            libc::MAP_SHARED,
+            libc::MAP_SHARED | MAP_POPULATE,
             file.as_raw_fd(),
             offset,
         )
@@ -94,7 +104,7 @@ impl MmapInner {
         MmapInner::new(
             len,
             libc::PROT_READ | libc::PROT_WRITE,
-            libc::MAP_PRIVATE,
+            libc::MAP_PRIVATE | MAP_POPULATE,
             file.as_raw_fd(),
             offset,
         )
